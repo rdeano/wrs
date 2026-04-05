@@ -11,7 +11,8 @@ A full-featured water refilling station management system built for a real local
 - **Laravel Breeze** — authentication scaffolding
 - **React 18** — UI library
 - **Inertia.js v1** — bridges Laravel + React (no separate API)
-- **MUI v5** — component library
+- **MUI v6** — component library (Grid uses `size={{ xs, sm }}` syntax, not `item xs={} sm={}`)
+- **MUI v5** is listed in package.json but the installed version behaves as v6 — always use v6 Grid syntax
 - **Vite 8** — build tool (installed with --legacy-peer-deps)
 
 ## Project location
@@ -158,6 +159,8 @@ All in `app/Models/`:
 - [x] Step 10 — Inventory module (stock logs + alerts + suppliers)
 - [x] Step 11 — Expenses module
 - [x] Step 12 — Reports & dashboard (sales, profit, delivery analytics)
+- [x] Step 13 — Staff (Users) module (admin-only CRUD for cashier/manager accounts)
+- [x] Step 14 — Role-based sidebar filtering (nav items hidden based on user permissions)
 
 ## Coding conventions
 - Controllers in `app/Http/Controllers/` grouped by module
@@ -169,4 +172,8 @@ All in `app/Models/`:
 - All money columns: `decimal(10, 2)`
 - Audit log every create, update, delete, void action
 - `ProductPricing` declares explicit `$table = 'product_pricing'` — Laravel would infer `product_pricings` by default
-- MUI v5 + `@mui/icons-material` installed with `--legacy-peer-deps` (not in original package.json — added during Step 6)
+- MUI `@mui/icons-material` installed with `--legacy-peer-deps` (not in original package.json — added during Step 6)
+- Grid items use `<Grid size={{ xs: 12, sm: 6 }}>` syntax (MUI v6) — never use `item xs={} sm={}` (MUI v5)
+- User permissions are shared globally via `HandleInertiaRequests` as `auth.permissions` (array of permission name strings)
+- Sidebar nav items each carry a `permission` key; `AuthenticatedLayout` filters them against `auth.permissions` before rendering — no permission key means always visible (e.g. Dashboard)
+- `customer` role is excluded from staff user management — only admin/manager/cashier can be assigned via the Users module

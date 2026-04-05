@@ -34,27 +34,43 @@ import BarChartIcon         from '@mui/icons-material/BarChart';
 import AccountCircleIcon    from '@mui/icons-material/AccountCircle';
 import LogoutIcon           from '@mui/icons-material/Logout';
 import WaterDropIcon        from '@mui/icons-material/WaterDrop';
+import BadgeIcon            from '@mui/icons-material/Badge';
 
 const DRAWER_EXPANDED  = 220;
 const DRAWER_COLLAPSED = 64;
 
 const NAV_ITEMS = [
-    { label: 'Dashboard',   icon: <DashboardIcon fontSize="small" />,     routeName: 'dashboard',           href: '/dashboard' },
+    { label: 'Dashboard',    icon: <DashboardIcon fontSize="small" />,     routeName: 'dashboard',           href: '/dashboard' },
     { divider: true, label: 'Sales' },
-    { label: 'Orders / POS', icon: <ShoppingCartIcon fontSize="small" />, routeName: 'admin.orders.*',      href: '/admin/orders' },
-    { label: 'Customers',   icon: <PeopleIcon fontSize="small" />,        routeName: 'admin.customers.*',   href: '/admin/customers' },
-    { label: 'Deliveries',  icon: <LocalShippingIcon fontSize="small" />, routeName: 'admin.deliveries.*',  href: '/admin/deliveries' },
+    { label: 'Orders / POS', icon: <ShoppingCartIcon fontSize="small" />,  routeName: 'admin.orders.*',      href: '/admin/orders',    permission: 'order-list' },
+    { label: 'Customers',    icon: <PeopleIcon fontSize="small" />,         routeName: 'admin.customers.*',   href: '/admin/customers', permission: 'customer-list' },
+    { label: 'Deliveries',   icon: <LocalShippingIcon fontSize="small" />,  routeName: 'admin.deliveries.*',  href: '/admin/deliveries',permission: 'delivery-list' },
     { divider: true, label: 'Operations' },
-    { label: 'Products',    icon: <CategoryIcon fontSize="small" />,      routeName: 'admin.products.*',    href: '/admin/products' },
-    { label: 'Inventory',   icon: <InventoryIcon fontSize="small" />,     routeName: 'admin.inventory.*',   href: '/admin/inventory' },
-    { label: 'Expenses',    icon: <ReceiptLongIcon fontSize="small" />,   routeName: 'admin.expenses.*',    href: '/admin/expenses' },
+    { label: 'Products',     icon: <CategoryIcon fontSize="small" />,       routeName: 'admin.products.*',    href: '/admin/products',  permission: 'product-list' },
+    { label: 'Inventory',    icon: <InventoryIcon fontSize="small" />,      routeName: 'admin.inventory.*',   href: '/admin/inventory', permission: 'inventory-list' },
+    { label: 'Expenses',     icon: <ReceiptLongIcon fontSize="small" />,    routeName: 'admin.expenses.*',    href: '/admin/expenses',  permission: 'expense-list' },
     { divider: true, label: 'System' },
-    { label: 'Reports',     icon: <BarChartIcon fontSize="small" />,      routeName: 'admin.reports.*',     href: '/admin/reports' },
-    { label: 'Settings',    icon: <SettingsIcon fontSize="small" />,      routeName: 'admin.settings.*',    href: '/admin/settings' },
+    { label: 'Reports',      icon: <BarChartIcon fontSize="small" />,       routeName: 'admin.reports.*',     href: '/admin/reports',   permission: 'report-view' },
+    { label: 'Staff',        icon: <BadgeIcon fontSize="small" />,          routeName: 'admin.users.*',       href: '/admin/users',     permission: 'user-list' },
+    { label: 'Settings',     icon: <SettingsIcon fontSize="small" />,       routeName: 'admin.settings.*',    href: '/admin/settings',  permission: 'setting-manage' },
 ];
 
 function SidebarContent({ collapsed, onToggle, onItemClick }) {
-    const { url } = usePage();
+    const { url, props: { auth } } = usePage();
+    const permissions = auth.permissions ?? [];
+
+    const visibleItems = NAV_ITEMS.filter((item) => {
+        if (item.divider) return true;
+        if (!item.permission) return true;
+        return permissions.includes(item.permission);
+    });
+
+    // Remove dividers that have no visible items after them
+    const filteredItems = visibleItems.filter((item, idx) => {
+        if (!item.divider) return true;
+        const next = visibleItems[idx + 1];
+        return next && !next.divider;
+    });
 
     const isActive = (item) => {
         if (!item.routeName) return false;
@@ -122,7 +138,7 @@ function SidebarContent({ collapsed, onToggle, onItemClick }) {
             {/* Nav items */}
             <Box sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', py: 1.5, px: collapsed ? 1 : 1.5 }}>
                 <List dense disablePadding>
-                    {NAV_ITEMS.map((item, idx) => {
+                    {filteredItems.map((item, idx) => {
                         if (item.divider) {
                             return collapsed ? (
                                 <Box key={`div-${idx}`} sx={{ my: 1 }}>
